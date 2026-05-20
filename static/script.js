@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // New Elements for Scenario Setup
     const scenarioScreen = document.getElementById('scenarioScreen');
     const chatInterface = document.getElementById('chatInterface');
-    const scenarioInput = document.getElementById('scenarioInput');
+    const scenarioInput = document.getElementById('scenarioInput'); 
     const beginChatButton = document.getElementById('beginChat');
 
     // Existing Chat Elements
@@ -12,8 +12,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const typingIndicator = document.getElementById('typingIndicator');
     const resourcesButton = document.getElementById('resourcesButton');
     const resourcesContent = document.getElementById('resourcesContent');
+    const endSessionButton = document.getElementById('endSessionButton');
     
     let chatHistory = [];
+    let currentScenario = ''; // Scenario tracking for debrief feature
     
     function smoothScrollToBottom() {
         const chatContainer = document.querySelector('.chat-container');
@@ -239,7 +241,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const chatUI = document.getElementById('chatInterface');
         chatUI.style.display = 'flex';
 
-        // Initialize chat with the custom scenario (typing indicator signals loading)
+        currentScenario = scenario; // Save for debrief
+        // Initialise the chat with the custom scenario (typing indicator signals loading)
         initChat(scenario);
     });
 
@@ -251,6 +254,120 @@ document.addEventListener('DOMContentLoaded', function() {
             sendMessage();
         }
     });
+
+    // End Session and Debrief
+    let debriefData = null;
+    let activeDebriefFw = 'SPIKES';
+
+    endSessionButton.addEventListener('click', async function() {
+        if (chatHistory.length < 2) {
+            alert("The conversation is too short to evaluate. Please exchange at least a few messages first.");
+            return;
+        }
+
+        // Show overlay in the loading state
+        const overlay = document.getElementById('debriefOverlay');
+        document.getElementById('debriefLoading').style.display = 'flex';
+        document.getElementById('debriefResults').style.display = 'none';
+        document.getElementById('debriefError').style.display = 'none';
+        document.getElementById('debriefScenarioLabel').textContent = currentScenario;
+        overlay.style.display = 'flex';
+
+        try {
+            const response = await fetch('/api/evaluate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_history: chatHistory, scenario: currentScenario })
+            });
+            const data = await response.json();
+
+            document.getElementById('debriefLoading').style.display = 'none';
+
+            if (data.evaluation) {
+                debriefData = data.evaluation;
+                renderDebrief(debriefData);
+                document.getElementById('debriefResults').style.display = 'block';
+            } else {
+                document.getElementById('debriefError').style.display = 'block';
+            }
+        } catch (err) {
+            document.getElementById('debriefLoading').style.display = 'none';
+            document.getElementById('debriefError').style.display = 'block';
+            console.error('[debrief error]:', err);
+        }
+    });
+
+    function renderDebrief(ev) {
+        // Overall Summary
+        document.getElementById('debriefSummary').textContent = ev.overall_summary || '';
+
+        // Dimensions
+        const dimContainer = document.getElementById('debriefDimensions');
+        dimContainer.innerHTML = '';
+        (ev.dimensions || []).forEach(d => {
+            const score = Math.max(1, Math.min(5, d.score));
+            const pct = ((score - 1) / 4) * 100;
+            // Colour shift according to the score
+            const colour = score <= 2 ? '#C0714A' : score === 3 ? '#B8973A' : '#5A9E6F';
+            dimContainer.innerHTML += `
+                <div class="dim-row">
+                    <div class="dim-header">
+                        <span class="dim-name">${d.name}</span>
+                        <span class="dim-score" style="color:${colour}">${score}<span class="dim-denom">/5</span></span>
+                    </div>
+                    <div class="dim-bar-track">
+                        <div class="dim-bar-fill" style="width:${pct}%; background:${colour};"></div>
+                    </div>
+                    <p class="dim-justification">${d.justification}</p>
+                </div>`;
+        });
+
+        // Checklist (render active tab)
+        renderChecklistTab(activeDebriefFw);
+    }
+
+    function renderChecklistTab(fw) {
+        if (!debriefData) return;
+        const steps = debriefData.framework_checklist?.[fw] || [];
+        const container = document.getElementById('debriefChecklist');
+        container.innerHTML = steps.map(s => `
+            <div class="checklist-row ${s.demonstrated ? 'demonstrated' : 'missed'}">
+                <span class="checklist-icon">${s.demonstrated ? '✓' : '✗'}</span>
+                <div class="checklist-text">
+                    <span class="checklist-step">${s.step}</span>
+                    <span class="checklist-note">${s.note}</span>
+                </div>
+            </div>`).join('');
+    }
+
+    // Debrief framework tab switching
+    document.addEventListener('click', function(e) {
+        if (e.target.dataset.debriefFw) {
+            document.querySelectorAll('[data-debrief-fw]').forEach(t => t.classList.remove('active'));
+            e.target.classList.add('active');
+            activeDebriefFw = e.target.dataset.debriefFw;
+            renderChecklistTab(activeDebriefFw);
+        }
+    });
+
+    // New Session button resets everything
+    document.getElementById('debriefNewSession').addEventListener('click', function() {
+        document.getElementById('debriefOverlay').style.display = 'none';
+        debriefData = null;
+        activeDebriefFw = 'SPIKES';
+        chatHistory = [];
+        currentScenario = '';
+        document.getElementById('chatMessages').innerHTML = '';
+        document.getElementById('chatInterface').style.display = 'none';
+        document.getElementById('patientProfileBar').style.display = 'none';
+        document.getElementById('profileCard').style.display = 'none';
+        document.getElementById('scenarioInput').value = '';
+        document.getElementById('scenarioScreen').style.display = 'flex';
+        // Reset framework panel
+        document.getElementById('frameworkPanel').style.display = 'none';
+        document.getElementById('resourcesButton').innerHTML = '<i class="fas fa-book-open"></i> Show Frameworks';
+    });
+    
 
     // Note: initChat() is NO LONGER called here. 
     // It is called only after the user submits the scenario.
