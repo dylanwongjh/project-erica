@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Jost:wght300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
+<body> 
     <!-- Welcome Animation Screen -->
     <div class="welcome-screen" id="welcomeScreen">
         <div class="logo-container">
@@ -84,6 +84,55 @@
             <div class="resources-toggle-bar">
                 <button id="resourcesButton">
                     <i class="fas fa-book-open"></i> Show Frameworks
+                </button>
+                <button id="endSessionButton">
+                    <i class="fas fa-flag-checkered"></i> End Session
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Debrief Model -->
+     <div id="debriefOverlay" class="debrief-overlay" style="display: none;">
+        <div class="debrief-modal">
+            <div class="debrief-header">
+                <h2>Session Debrief</h2>
+                <p id="debriefScenarioLabel"></p>
+            </div>
+
+            <!-- Loading State -->
+             <div id="debriefLoading" class="debrief-loading">
+                <div class="debrief-dots">
+                    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                </div>
+                <p>Analysing your conversation...</p>
+            </div>
+
+            <!-- Results -->
+             <div id="debriefResults" style="display:none;">
+                <div class="debrief-summary-box">
+                    <p id="debriefSummary"></p>
+                </div>
+
+                <h3 class="debrief-section-title">Performance Dimensions</h3>
+                <div id="debriefDimensions" class="debrief-dimensions"></div>
+
+                <h3 class="debrief-section-title">Framework Checklist</h3>
+                <div class="framework-tabs debrief-fw-tabs">
+                    <button class="fw-tab active" data-debrief-fw="SPIKES">SPIKES</button>
+                    <button class="fw-tab" data-debrief-fw="NURSE">NURSE</button>
+                    <button class="fw-tab" data-debrief-fw="SIC">SIC</button>
+                </div>
+                <div id="debriefChecklist" class="debrief-checklist"></div>
+             </div>
+
+             <div id="debriefError" class="debrief-error" style="display:none;">
+                <p>Something went wrong generating the debrief. Please try again.</p>
+            </div>
+
+            <div class="debrief-actions">
+                <button id="debriefNewSession">
+                    <i class="fas fa-redo"></i> Start New Session
                 </button>
             </div>
         </div>
