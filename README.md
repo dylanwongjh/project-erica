@@ -6,9 +6,9 @@
 
 ## What is ERIICA?
 
-Serious Illness Conversations are among the most emotionally demanding moments in clinical practice. ERICA gives healthcare professionals a safe, private space to rehearse these conversations before they happen in real life.
+Serious Illness Conversations are among the most emotionally demanding moments in clinical practice. Many of such conversations require empathy, care, and knowing how to properly engage with the patients in this manner. However, these skills are only acquired through much practice, honed with experiences with patients with diverse needs and varying situations, which may not always be readily available for trainees. ERIICA gives healthcare professionals a safe, private space to practice and rehearse these conversations before they happen in real life.
 
-Users are able to describe their patient's situation, and ERICA responds as a simulated patient. The AI draws on a curated library of real clinical case studies to reflect authentic emotional states, fears, and communication patterns. Built-in reference frameworks (SPIKES, NURSE, SIC Guide) are available at any point during the conversation, conveniently placed within the user chat interface.
+Users are able to describe their patient's situation, or select from a large database of different scenarios, and ERIICA responds as a simulated patient based on the particular context. The AI draws on a deep library of clinical dialogues with varying situations, curated from the MentalChat16K dataset. Built-in reference frameworks (SPIKES and NURSE) are available at any point during the conversation, conveniently placed within the user chat interface.
 
 ---
 
@@ -28,9 +28,9 @@ Users are able to describe their patient's situation, and ERICA responds as a si
 | Layer | Technology |
 |---|---|
 | Backend | Python, Flask |
-| AI | Claude API (Anthropic) |
+| AI | Google API (Gemini-2.5-Flash) |
 | Vector store | ChromaDB |
-| Dataset | MentalChat16K (ShenLab / HuggingFace), MedDiaLog |
+| Dataset | MentalChat16K (ShenLab / HuggingFace) |
 | LLM enrichment | Ollama (local), OpenRouter (free-tier models) |
 | Frontend | HTML, CSS, Vanilla JS |
 
@@ -39,15 +39,17 @@ Users are able to describe their patient's situation, and ERICA responds as a si
 ## How It Works
 
 ```
-The user inputs a scenario that they will like to practice
+The user inputs/selects a scenario that they will like to practice
         ↓
 The AI searches through ChromaDB for the most similar case examples
         ↓
-Case used to prime ERICA's system prompt + build Patient Profile based on most similar case
+Case used to prime ERIICA's system prompt + build Patient Profile based on most similar case
         ↓
-User practises the conversation with ERICA
+User starts the conversation with ERIICA
         ↓
-Frameworks (SPIKES / NURSE / SIC) available for reference throughout
+Frameworks (SPIKES / NURSE ) available for reference throughout
+        ↓
+ERIICA grades the user's conversation based on the frameworks used
 ```
 
 ---
@@ -58,15 +60,14 @@ Frameworks (SPIKES / NURSE / SIC) available for reference throughout
 
 - Python 3.9+
 - [Ollama](https://ollama.com/) installed locally (for case enrichment)
-- Anthropic API key
 - Gemini API key
 - ChromaDB
 
 ### Setup
 
 ```bash
-git clone https://github.com/your-username/erica.git
-cd erica
+git clone https://github.com/your-username/eriica.git
+cd eriica
 pip install -r requirements.txt
 ```
 
@@ -100,14 +101,14 @@ python reset_and_reingest.py
 python app.py
 ```
 
-Navigate to `http://127.0.0.1:5001` in your browser.
+Navigate to `http://127.0.0.1:5002` in your browser.
 
 ---
 
 ## Project Structure
 
 ```
-erica/
+eriica/
 ├── app.py                    # Flask app, API routes, session management
 ├── extract_cases.py          # Pull case studies from HuggingFace
 ├── build_enriched_cases.py   # LLM-based feature enrichment for cases
