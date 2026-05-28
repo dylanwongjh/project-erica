@@ -1,10 +1,10 @@
-# ERICA — Empathy & Reassurance in Illness Conversation Assistant
+# ERIICA — Empathy & Reassurance in Illness Conversation Assistant
 
 > An AI-powered roleplay chatbot helping nurses and healthcare professionals prepare for Serious Illness Conversations (SICs) with end-of-life patients.
 
 ---
 
-## What is ERICA?
+## What is ERIICA?
 
 Serious Illness Conversations are among the most emotionally demanding moments in clinical practice. ERICA gives healthcare professionals a safe, private space to rehearse these conversations before they happen in real life.
 
