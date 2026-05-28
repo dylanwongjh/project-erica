@@ -1,25 +1,28 @@
 # ERIICA — Empathy & Reassurance in Illness Conversation Assistant
 
-> An AI-powered roleplay chatbot helping nurses and healthcare professionals prepare for Serious Illness Conversations (SICs) with end-of-life patients.
+> An AI-powered clinical training chatbot that helps nurses and healthcare professionals practise Serious Illness Conversations (SICs) in a safe, realistic simulation environment.
 
 ---
 
-## What is ERIICA?
+## Overview
 
-Serious Illness Conversations are among the most emotionally demanding moments in clinical practice. Many of such conversations require empathy, care, and knowing how to properly engage with the patients in this manner. However, these skills are only acquired through much practice, honed with experiences with patients with diverse needs and varying situations, which may not always be readily available for trainees. ERIICA gives healthcare professionals a safe, private space to practice and rehearse these conversations before they happen in real life.
+Serious Illness Conversations are among the most emotionally demanding moments in clinical practice. This conversations require empathy, presence, and the ability to navigate grief, denial, and uncertainty in real time. Yet these skills can only be developed through repeated practice across diverse patient situations, which are not always accessible to trainees.
 
-Users are able to describe their patient's situation, or select from a large database of different scenarios, and ERIICA responds as a simulated patient based on the particular context. The AI draws on a deep library of clinical dialogues with varying situations, curated from the MentalChat16K dataset. Built-in reference frameworks (SPIKES and NURSE) are available at any point during the conversation, conveniently placed within the user chat interface.
+ERIICA gives healthcare professionals a safe, private space to rehearse these conversations before they happen in real life. Users describe a patient scenario or choose from a curated library, and ERIICA responds as a simulated patient, dynamically adjusting its emotional state based on how the conversation unfolds.
 
 ---
 
 ## Features
 
-- **Scenario-driven Sessions** — Users describe their specific situation before the chat begins, priming ERICA with relevant context.
-- **RAG-powered Responses** — ERICA retrieves the most semantically similar case from a ChromaDB vector store to ground each session in realistic patient behaviour.
-- **Patient Profile Panel** — Displays a structured snapshot of the matched case (emotions, cognitive state, underlying needs) to guide the practitioner's approach.
-- **Conversational Frameworks** — SPIKES, NURSE, and SIC Guide available as in-session reference tabs.
-- **Session Isolation** — Each conversation is stateless and independent, with a rolling chat history window to maintain coherent dialogue.
-- **Comfortable UI** — Designed with accessibility and emotional sensitivity in mind.
+| Feature | Description |
+|---|---|
+| **Scenario Library** | Browse and filter a large database of clinical scenarios by difficulty (Beginner / Intermediate / Advanced), or describe your own |
+| **RAG-powered Simulation** | Retrieves the most semantically similar real case from ChromaDB to ground each session in authentic patient behaviour and voice |
+| **Dynamic Emotional Tracking** | ERIICA's emotional state evolves throughout the conversation — good technique visibly de-escalates distress; poor communication causes withdrawal |
+| **Patient Profile Panel** | Displays a structured snapshot of the matched case (primary emotions, cognitive state, underlying needs) to guide the practitioner |
+| **Clinical Frameworks** | SPIKES, NURSE, and the SIC Guide are available as in-session reference tabs at any point during the conversation |
+| **Session Debrief** | After each session, ERIICA grades the conversation against the clinical frameworks and highlights demonstrated vs. missed skills |
+| **Session Isolation** | Each conversation is fully stateless and independent, with a rolling history window for coherent dialogue |
 
 ---
 
@@ -27,11 +30,11 @@ Users are able to describe their patient's situation, or select from a large dat
 
 | Layer | Technology |
 |---|---|
-| Backend | Python, Flask |
-| AI | Google API (Gemini-2.5-Flash) |
-| Vector store | ChromaDB |
-| Dataset | MentalChat16K (ShenLab / HuggingFace) |
-| LLM enrichment | Ollama (local), OpenRouter (free-tier models) |
+| Backend | Python 3.9+, Flask |
+| AI Model | Google Gemini 2.5 Flash |
+| Vector Store | ChromaDB + SentenceTransformers (`all-MiniLM-L6-v2`) |
+| Dataset | [MentalChat16K](https://huggingface.co/datasets/ShenLab/MentalChat16K) + MedDiaLog (HuggingFace) |
+| LLM Enrichment | Ollama (local), OpenRouter (free-tier models) |
 | Frontend | HTML, CSS, Vanilla JS |
 
 ---
@@ -39,17 +42,17 @@ Users are able to describe their patient's situation, or select from a large dat
 ## How It Works
 
 ```
-The user inputs/selects a scenario that they will like to practice
+User selects or describes a scenario
         ↓
-The AI searches through ChromaDB for the most similar case examples
+ChromaDB retrieves the most semantically similar case studies
         ↓
-Case used to prime ERIICA's system prompt + build Patient Profile based on most similar case
+Retrieved cases prime ERIICA's system prompt + populate the Patient Profile panel
         ↓
-User starts the conversation with ERIICA
+User begins the conversation — ERIICA roleplays as the patient
         ↓
-Frameworks (SPIKES / NURSE ) available for reference throughout
+SPIKES / NURSE / SIC Guide available as reference throughout
         ↓
-ERIICA grades the user's conversation based on the frameworks used
+Session ends → ERIICA evaluates the conversation and provides a structured debrief
 ```
 
 ---
@@ -59,22 +62,21 @@ ERIICA grades the user's conversation based on the frameworks used
 ### Prerequisites
 
 - Python 3.9+
-- [Ollama](https://ollama.com/) installed locally (for case enrichment)
-- Gemini API key
-- ChromaDB
+- A [Gemini API key](https://aistudio.google.com/app/apikey)
+- [Ollama](https://ollama.com/) installed locally (for case enrichment only)
 
-### Setup
+### Installation
 
 ```bash
-git clone https://github.com/your-username/eriica.git
-cd eriica
+git clone https://github.com/dylanwongjh/project-sic-chatbot.git
+cd project-sic-chatbot
 pip install -r requirements.txt
 ```
 
-Add your API keys to a `.env` file:
+Add your Gemini API key to `config.py`:
 
-```
-ANTHROPIC_API_KEY=your_key_here
+```python
+GEMINI_API_KEY = "your_key_here"
 ```
 
 ### Building the Case Library
@@ -82,16 +84,16 @@ ANTHROPIC_API_KEY=your_key_here
 Run these steps in order to populate ChromaDB with enriched case files:
 
 ```bash
-# 1. Extract case studies from HuggingFace datasets
+# 1. Extract case studies from HuggingFace
 python extract_cases.py
 
-# 2. Clean and enrich cases with LLM-generated feature annotations
+# 2. Enrich cases with LLM-generated feature annotations
 python build_enriched_cases.py
 
-# 3. Ingest enriched cases into ChromaDB (batched for large datasets)
+# 3. Ingest enriched cases into ChromaDB
 python ingest.py
 
-# 4. (Optional) Reset ChromaDB and reingest from scratch
+# 4. (Optional) Wipe and reingest from scratch
 python reset_and_reingest.py
 ```
 
@@ -101,31 +103,44 @@ python reset_and_reingest.py
 python app.py
 ```
 
-Navigate to `http://127.0.0.1:5002` in your browser.
+Open `http://127.0.0.1:5002` in your browser.
 
 ---
 
 ## Project Structure
 
 ```
-eriica/
-├── app.py                    # Flask app, API routes, session management
+project-sic-chatbot/
+├── app.py                    # Flask app — routes, session management, AI logic
+├── config.py                 # API key configuration
 ├── extract_cases.py          # Pull case studies from HuggingFace
-├── build_enriched_cases.py   # LLM-based feature enrichment for cases
+├── build_enriched_cases.py   # LLM-based feature enrichment
 ├── ingest.py                 # Batch ingest into ChromaDB
 ├── reset_and_reingest.py     # Wipe and repopulate ChromaDB
+├── chroma_db/                # Persisted ChromaDB vector store
+├── case_studies/             # Source case-study text files
 ├── static/
 │   ├── style.css
 │   ├── script.js
-│   └── projectmindfull.png
+│   └── grid-background.png
 └── templates/
     └── index.html
 ```
 
 ---
 
+## Clinical Frameworks
+
+ERIICA incorporates three widely used palliative care communication frameworks as in-session references:
+
+- **SPIKES** — A six-step protocol for delivering serious news (Setting, Perception, Invitation, Knowledge, Empathy, Summary)
+- **NURSE** — An empathic response framework for acknowledging emotion (Naming, Understanding, Respecting, Supporting, Exploring)
+- **SIC Guide** — The Serious Illness Conversation Guide for structured goals-of-care discussions
+
+---
+
 ## Acknowledgements
 
-- Built on top of **Project Mindfull**, adapted for clinical communication training.
+- Adapted from **Project Mindfull**, reoriented for clinical communication training.
 - Case data sourced from [ShenLab/MentalChat16K](https://huggingface.co/datasets/ShenLab/MentalChat16K) and MedDiaLog on HuggingFace.
-- Conversational frameworks (SPIKES, NURSE, SIC Guide) are widely used in palliative care education.
+- Clinical frameworks (SPIKES, NURSE, SIC Guide) are widely used in palliative and serious illness care education.
